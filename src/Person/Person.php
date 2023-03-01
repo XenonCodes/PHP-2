@@ -1,6 +1,5 @@
 <?php
 
-// namespace src\Person;
 namespace XenonCodes\PHP2\Person;
 
 use DateTimeImmutable;

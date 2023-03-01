@@ -1,9 +1,5 @@
 <?php
 
-// namespace src\Blog;
-
-// use src\Person\Name;
-
 namespace XenonCodes\PHP2\Blog;
 
 use XenonCodes\PHP2\Person\Name;
@@ -12,13 +8,13 @@ use DateTimeImmutable;
 class User
 {
     /**
-     * @param int $id ID пользователя
+     * @param UUID $id UUID пользователя
      * @param Name $userName Имя и Фамилия
      * @param string $login логин пользователя
      * @param DateTimeImmutable $registeredOn дата создания объекта User
      */
     public function __construct(
-        private int $id,
+        private UUID $id,
         private Name $userName,
         private string $login,
         private DateTimeImmutable $registeredOn
@@ -27,10 +23,10 @@ class User
 
     public function __toString()
     {
-        return "Пользователь $this->userName c ID-$this->id и логином $this->login (на сайте с " . $this->getRegistredOn() . ")";
+        return "Пользователь $this->userName c ID: $this->id и логином $this->login (на сайте с " . $this->getRegistredOn() . ")";
     }
 
-    public function getId(): int
+    public function getId(): UUID
     {
         return $this->id;
     }

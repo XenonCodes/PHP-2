@@ -2,77 +2,63 @@
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use XenonCodes\PHP2\Blog\{Comment, Post, User};
-use XenonCodes\PHP2\Person\{Name, Person};
-
-/*
--Реализуйте автозагрузчик классов согласно следующим правилам:
-    1. Разделитель пространства имён преобразуется в разделитель папок: / для Linux и
-    MacOS или \ для Windows.
-    2. Знак _ в имени класса преобразуется в разделитель папок.
-    3. Файл с кодом класса имеет расширение .php.
--Примеры:
-    1. \Doctrine\Common\ClassLoader ⇒ /some/path/Doctrine/Common/ClassLoader.php.
-    2. \my\package\Class_Name ⇒ /some/path/namespace/package/Class/Name.php.
-    3. \my\package_name\Class_Name ⇒ /some/path/my/package_name/Class/Name.php
-*/
-
-// use src\Blog\{Post, User};
-// use src\Person\{Name, Person};
-
-// spl_autoload_register(function ($class) {
-//     // var_dump($class);
-//     $file = str_replace('\\', DIRECTORY_SEPARATOR, $class);
-//     $file = str_replace('_', DIRECTORY_SEPARATOR, $class) . '.php';
-//     var_dump($file);
-//     if (file_exists($file)) {
-//         require $file;
-//     }
-// });
-
-// $person = new Person($name, new DateTimeImmutable());
-// echo $person.PHP_EOL;
-// echo '-----------------------------------'.PHP_EOL;
+use XenonCodes\PHP2\Blog\Command\CreateUserCommand;
+use XenonCodes\PHP2\Blog\Command\Arguments;
+use XenonCodes\PHP2\Blog\Comment;
+use XenonCodes\PHP2\Blog\Post;
+use XenonCodes\PHP2\Blog\Repositories\CommentsRepository\SqliteCommentsRepository;
+use XenonCodes\PHP2\Blog\Repositories\PostsRepository\SqlitePostsRepository;
+use XenonCodes\PHP2\Blog\Repositories\UsersRepository\SqliteUsersRepository;
+use XenonCodes\PHP2\Blog\User;
+use XenonCodes\PHP2\Blog\UUID;
+use XenonCodes\PHP2\Person\Name;
 
 $faker = Faker\Factory::create('ru_RU');
 
-$name = new Name($faker->firstName(), $faker->lastName());
-$user = new User($faker->numberBetween(0, 100), $name, $faker->word(), new DateTimeImmutable() );
+$connection = new PDO('sqlite:' . __DIR__ . '/blog.sqlite');
 
-switch ($argv[1]) {
-    case 'user':
-        echo $user . "\n";
-        break;
+$usersRepository = new SqliteUsersRepository($connection);
+$postsRepository = new SqlitePostsRepository($connection);
+$commentsRepository = new SqliteCommentsRepository($connection);
 
-    case 'post':
-        $post = new Post(
-            $faker->numberBetween(0, 100),
-            $user,
-            $faker->realText(rand(10, 25)),
-            $faker->realText(rand(100, 200))
-        );
-        echo $post . "\n";
-        break;
+//------------------------сохранить в БД случайных User/Post/Comment--------------------------------
+// $name = new Name($faker->firstName(), $faker->lastName());
+// $user = new User(UUID::random(), $name, $faker->userName(), new DateTimeImmutable());
+// $usersRepository->save($user);
 
-    case 'comment':
-        $name2 = new Name($faker->firstName(), $faker->lastName());
-        $user2 = new User($faker->numberBetween(0, 100), $name2, $faker->word(), new DateTimeImmutable() );
-        $post = new Post(
-            $faker->numberBetween(0, 100),
-            $user,
-            $faker->realText(rand(10, 25)),
-            $faker->realText(rand(100, 200))
-        );
-        $comment = new Comment(
-            $faker->numberBetween(0, 100),
-            $user2,
-            $post,
-            $faker->realText(rand(100, 200))
-        );
-        echo $comment . "\n";
-        break;
+// $post = new Post(
+//     UUID::random(),
+//     $usersRepository->getByLogin('vitalii67'), //User c ником vitalii67 уже есть в БД
+//     $faker->realText(rand(10, 25)),
+//     $faker->realText(rand(100, 200)),
+// );
+// $postsRepository->save($post);
 
-    default:
-        echo "Unknown command: " . $argv[1] . "\n";
-        die();
+// $comment = new Comment(
+//     UUID::random(),
+//     $usersRepository->getByLogin('pakomova.iskra'), //User c ником pakomova.iskra уже есть в БД
+//     $postsRepository->get(new UUID('ba7467a4-f315-4c57-b191-2728fd4eb402')), //Post cданным UUID уже есть
+//     $faker->realText(rand(100, 200)),
+// );
+// $commentsRepository->save($comment);
+
+//-----------------------------получить из БД User/Post/Comment-------------------------------------
+try {
+    echo $usersRepository->getByLogin('admin') . PHP_EOL;
+    echo '---------------------' . PHP_EOL;
+    echo $postsRepository->get(new UUID('ba7467a4-f315-4c57-b191-2728fd4eb402')) . PHP_EOL;
+    echo '---------------------' . PHP_EOL;
+    echo $commentsRepository->get(new UUID('52772b9c-1a0a-433a-924e-88f462aae528')) . PHP_EOL;
+} catch (Exception $e) {
+    print $e->getMessage();
 }
+
+//----------------------------------тут работаем с command---------------------------------------
+//Команда в терминале php cli.php login=ВАШ_ЛГИН first_name=ВАШЕ_ИМЯ last_name=ВАШЕ_ФАМИЛИЯ  
+// $command = new CreateUserCommand($usersRepository);
+
+// try {
+//     $command->handle(Arguments::fromArgv($argv));
+// } catch (Exception $e) {
+//     print $e->getMessage();
+// }
