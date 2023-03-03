@@ -1,21 +1,17 @@
 <?php
 
-// namespace src\Blog;
-
-// use src\Person\Person;
-
 namespace XenonCodes\PHP2\Blog;
 
 class Post
 {
     /**
-     * @param int $id ID поста
+     * @param UUID $id UUID поста
      * @param User $author автор поста
      * @param string $title заголовок поста
      * * @param string $text текст поста
      */
     public function __construct(
-        private int $id,
+        private UUID $id,
         private User $author,
         private string $title,
         private string $text
@@ -28,7 +24,7 @@ class Post
             . "<<" . $this->title . ">>" . PHP_EOL . $this->text;
     }
 
-    public function getId(): int
+    public function getId(): UUID
     {
         return $this->id;
     }

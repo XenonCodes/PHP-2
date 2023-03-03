@@ -1,19 +1,17 @@
 <?php
 
-// namespace src\Blog;
-
 namespace XenonCodes\PHP2\Blog;
 
 class Comment
 {
     /**
-     * @param int $id ID комментария
+     * @param UUID $id UUID комментария
      * @param User $author автор комментария
      * @param Post $post пост к которому написан комментарий
      * * @param string $text текст комментария
      */
     public function __construct(
-        private int $id,
+        private UUID $id,
         private User $author,
         private Post $post,
         private string $text
@@ -22,14 +20,12 @@ class Comment
 
     public function __toString()
     {
-        return $this->post . PHP_EOL
-            . "--------------------------------------------------------" . PHP_EOL
-            . "Оставленные коментарии:" . PHP_EOL
+        return "Оставленные коментарии под постом <<" . $this->post->getTitle() . ">>:" . PHP_EOL
             . '"' . $this->text . PHP_EOL
             . 'Автор: ' . $this->author->getName() . '"';
     }
 
-    public function getId(): int
+    public function getId(): UUID
     {
         return $this->id;
     }

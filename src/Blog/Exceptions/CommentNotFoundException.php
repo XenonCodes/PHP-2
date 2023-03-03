@@ -2,6 +2,6 @@
 
 namespace XenonCodes\PHP2\Blog\Exceptions;
 
-class UserNotFoundException extends AppException
+class CommentNotFoundException extends AppException
 {
 }
