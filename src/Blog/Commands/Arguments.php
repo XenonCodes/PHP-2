@@ -1,10 +1,10 @@
 <?php
 
-namespace XenonCodes\PHP2\Blog\Command;
+namespace XenonCodes\PHP2\Blog\Commands;
 
 use XenonCodes\PHP2\Blog\Exceptions\ArgumentsException;
 
-final class Arguments
+class Arguments
 {
     private array $arguments = [];
     public function __construct(iterable $arguments)

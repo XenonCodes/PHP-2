@@ -1,6 +1,6 @@
 <?php
 
-namespace XenonCodes\PHP2\Blog\Command;
+namespace XenonCodes\PHP2\Blog\Commands;
 
 use DateTimeImmutable;
 use XenonCodes\PHP2\Blog\Exceptions\CommandException;
