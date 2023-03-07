@@ -2,8 +2,8 @@
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use XenonCodes\PHP2\Blog\Command\CreateUserCommand;
-use XenonCodes\PHP2\Blog\Command\Arguments;
+use XenonCodes\PHP2\Blog\Commands\CreateUserCommand;
+use XenonCodes\PHP2\Blog\Commands\Arguments;
 use XenonCodes\PHP2\Blog\Comment;
 use XenonCodes\PHP2\Blog\Post;
 use XenonCodes\PHP2\Blog\Repositories\CommentsRepository\SqliteCommentsRepository;

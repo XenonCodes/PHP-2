@@ -13,7 +13,14 @@
     ],
     "require": {
         "fakerphp/faker": "^1.21",
-        "roave/security-advisories": "dev-latest",
         "symfony/polyfill-uuid": "^1.27"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0",
+        "roave/security-advisories": "dev-latest"
+    },
+    "scripts": {
+        "test": "phpunit UnitTests --testdox --colors",
+        "htmltestreport": "php -d xdebug.mode=coverage vendor/bin/phpunit unittests --coverage-html coverage_report --coverage-filter src"
     }
 }
