@@ -1,0 +1,7 @@
+POST http://127.0.0.1:9000/posts/create
+
+{
+"author_uuid": "183e4567-e89b-12d3-a456-426614174000",
+"text": "some text",
+"title": "some title"
+}
