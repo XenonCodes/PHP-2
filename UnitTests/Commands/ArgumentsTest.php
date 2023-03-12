@@ -1,6 +1,6 @@
 <?php
 
-namespace XenonCodes\PHP2\UnitTests\Commands;
+namespace XenonCodes\PHP2\Tests\Commands;
 
 use PHPUnit\Framework\TestCase;
 use XenonCodes\PHP2\Blog\Commands\Arguments;

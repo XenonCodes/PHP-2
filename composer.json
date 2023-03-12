@@ -5,6 +5,11 @@
             "XenonCodes\\PHP2\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "XenonCodes\\PHP2\\Tests\\": "UnitTests/"
+        }
+    },
     "authors": [
         {
             "name": "Xenon",

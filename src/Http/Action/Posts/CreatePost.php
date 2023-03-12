@@ -17,7 +17,6 @@ use XenonCodes\PHP2\Http\SuccessfulResponse;
 
 class CreatePost implements ActionInterface
 {
-    // Внедряем репозитории статей и пользователей
     public function __construct(
         private PostsRepositoryInterface $postsRepository,
         private UsersRepositoryInterface $usersRepository,
@@ -25,24 +24,20 @@ class CreatePost implements ActionInterface
     }
     public function handle(Request $request): Response
     {
-        // Пытаемся создать UUID пользователя из данных запроса
         try {
             $authorUuid = new UUID($request->jsonBodyField('author_uuid'));
         } catch (HttpException | InvalidArgumentException $e) {
             return new ErrorResponse($e->getMessage());
         }
-        // Пытаемся найти пользователя в репозитории
+
         try {
             $this->usersRepository->get($authorUuid);
         } catch (UserNotFoundException $e) {
             return new ErrorResponse($e->getMessage());
         }
         
-        // Генерируем UUID для новой статьи
         $newPostUuid = UUID::random();
         try {
-            // Пытаемся создать объект статьи
-            // из данных запроса
             $post = new Post(
                 $newPostUuid,
                 $author = $this->usersRepository->get($authorUuid),
@@ -52,10 +47,9 @@ class CreatePost implements ActionInterface
         } catch (HttpException $e) {
             return new ErrorResponse($e->getMessage());
         }
-        // Сохраняем новую статью в репозитории
+
         $this->postsRepository->save($post);
-        // Возвращаем успешный ответ,
-        // содержащий UUID новой статьи
+
         return new SuccessfulResponse([
             'uuid' => (string)$newPostUuid,
         ]);

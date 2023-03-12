@@ -1,6 +1,6 @@
 <?php
 
-namespace XenonCodes\PHP2\UnitTests\Action;
+namespace XenonCodes\PHP2\Tests\Action;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;

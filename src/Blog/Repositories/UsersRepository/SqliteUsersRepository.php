@@ -5,6 +5,7 @@ namespace XenonCodes\PHP2\Blog\Repositories\UsersRepository;
 use DateTimeImmutable;
 use PDO;
 use PDOStatement;
+use XenonCodes\PHP2\Blog\Exceptions\CheckingDuplicateLoginException;
 use XenonCodes\PHP2\Blog\Exceptions\UserNotFoundException;
 use XenonCodes\PHP2\Blog\User;
 use XenonCodes\PHP2\Blog\UUID;
@@ -19,7 +20,20 @@ class SqliteUsersRepository implements UsersRepositoryInterface
 
     public function save(User $user): void
     {
-        // Теперь объект подключения к БД доступен нам как $this->connection
+        $statement = $this->connection->prepare(
+            'SELECT * FROM users WHERE login = :login'
+        );
+    
+        $statement->execute([
+            ':login' => $user->getLogin(),
+        ]);
+    
+        $result = $statement->fetch(PDO::FETCH_ASSOC);
+    
+        if ($result) {
+            throw new CheckingDuplicateLoginException('Попробуйте другой логин для регистрации.');
+        }
+
         $statement = $this->connection->prepare(
             'INSERT INTO users (uuid, login, first_name, last_name, date_register)
             VALUES (:uuid, :login, :first_name, :last_name, :date_register)'
