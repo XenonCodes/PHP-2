@@ -1,6 +1,6 @@
 <?php
 
-namespace XenonCodes\PHP2\UnitTests\Commands;
+namespace XenonCodes\PHP2\Tests\Commands;
 
 use DateTimeImmutable;
 use XenonCodes\PHP2\Blog\Commands\Arguments;

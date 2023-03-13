@@ -1,6 +1,6 @@
 <?php
 
-namespace XenonCodes\PHP2\UnitTests\Repositories;
+namespace XenonCodes\PHP2\Tests\Repositories;
 
 use DateTimeImmutable;
 use PDO;

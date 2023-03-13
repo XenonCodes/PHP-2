@@ -1,6 +1,6 @@
 <?php
 
-namespace XenonCodes\PHP2\UnitTests\Repositories;
+namespace XenonCodes\PHP2\Tests\Repositories;
 
 use DateTimeImmutable;
 use PDO;
@@ -8,10 +8,8 @@ use PDOStatement;
 use PHPUnit\Framework\TestCase;
 use XenonCodes\PHP2\Blog\Comment;
 use XenonCodes\PHP2\Blog\Exceptions\CommentNotFoundException;
-use XenonCodes\PHP2\Blog\Exceptions\PostNotFoundException;
 use XenonCodes\PHP2\Blog\Post;
 use XenonCodes\PHP2\Blog\Repositories\CommentsRepository\SqliteCommentsRepository;
-use XenonCodes\PHP2\Blog\Repositories\PostsRepository\SqlitePostsRepository;
 use XenonCodes\PHP2\Blog\User;
 use XenonCodes\PHP2\Blog\UUID;
 use XenonCodes\PHP2\Person\Name;
