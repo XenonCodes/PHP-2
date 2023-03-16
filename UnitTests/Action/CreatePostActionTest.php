@@ -4,6 +4,7 @@ namespace XenonCodes\PHP2\Tests\Action;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
+use XenonCodes\PHP2\Blog\Exceptions\AuthException;
 use XenonCodes\PHP2\Blog\Exceptions\PostNotFoundException;
 use XenonCodes\PHP2\Blog\Exceptions\UserNotFoundException;
 use XenonCodes\PHP2\Blog\Post;
@@ -12,10 +13,14 @@ use XenonCodes\PHP2\Blog\Repositories\UsersRepository\UsersRepositoryInterface;
 use XenonCodes\PHP2\Blog\User;
 use XenonCodes\PHP2\Blog\UUID;
 use XenonCodes\PHP2\Http\Action\Posts\CreatePost;
+use XenonCodes\PHP2\Http\Auth\IdentificationInterface;
+use XenonCodes\PHP2\Http\Auth\JsonBodyLoginIdentification;
+use XenonCodes\PHP2\Http\Auth\JsonBodyUuidIdentification;
 use XenonCodes\PHP2\Http\ErrorResponse;
 use XenonCodes\PHP2\Http\Request;
 use XenonCodes\PHP2\Http\SuccessfulResponse;
 use XenonCodes\PHP2\Person\Name;
+use XenonCodes\PHP2\Tests\DummyLogger;
 
 class CreatePostActionTest extends TestCase
 {
@@ -55,34 +60,40 @@ class CreatePostActionTest extends TestCase
         };
     }
 
-    private function usersRepository(array $users): UsersRepositoryInterface
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testItReturnsSuccessAnswer(): void
     {
-        return new class($users) implements UsersRepositoryInterface
-        {
-            public function __construct(
-                private array $users
-            ) {
-            }
+        $postsRepositoryStub = $this->createStub(PostsRepositoryInterface::class);
+        $authenticationStub = $this->createStub(JsonBodyLoginIdentification::class);
 
-            public function save(User $user): void
-            {
-            }
+        $authenticationStub
+            ->method('user')
+            ->willReturn(
+                new User(
+                    new UUID("10373537-0805-4d7a-830e-22b481b4859c"),
+                    new Name('first', 'last'),
+                    'username',
+                    new DateTimeImmutable()
+                )
+            );
 
-            public function get(UUID $uuid): User
-            {
-                foreach ($this->users as $user) {
-                    if ($user instanceof User && (string)$uuid == $user->getId()) {
-                        return $user;
-                    }
-                }
-                throw new UserNotFoundException('Cannot find user: ' . $uuid);
-            }
+        $createPost = new CreatePost(
+            $postsRepositoryStub,
+            $authenticationStub,
+            new DummyLogger()
+        );
 
-            public function getByLogin(string $login): User
-            {
-                throw new UserNotFoundException('Not found');
-            }
-        };
+        $request = new Request([], [], '{"title":"title","text":"text"}');
+
+        $actual = $createPost->handle($request);
+
+        $this->assertInstanceOf(
+            SuccessfulResponse::class,
+            $actual
+        );
     }
 
     /**
@@ -95,16 +106,20 @@ class CreatePostActionTest extends TestCase
 
         $postsRepository = $this->postsRepository();
 
-        $usersRepository = $this->usersRepository([
-            new User(
-                new UUID('10373537-0805-4d7a-830e-22b481b4859c'),
-                new Name('name', 'surname'),
-                'username',
-                new DateTimeImmutable()
-            ),
-        ]);
+        $authenticationStub = $this->createStub(JsonBodyUuidIdentification::class);
 
-        $action = new CreatePost($postsRepository, $usersRepository);
+        $authenticationStub
+            ->method('user')
+            ->willReturn(
+                new User(
+                    new UUID("10373537-0805-4d7a-830e-22b481b4859c"),
+                    new Name('first', 'last'),
+                    'username',
+                    new DateTimeImmutable()
+                )
+            );
+
+        $action = new CreatePost($postsRepository, $authenticationStub, new DummyLogger());
 
         $response = $action->handle($request);
 
@@ -131,17 +146,23 @@ class CreatePostActionTest extends TestCase
     {
         $request = new Request([], [], '{"author_uuid":"10373537-0805-4d7a-830e-22b481b4859c","title":"title","text":"text"}');
 
-        $postsRepository = $this->postsRepository();
-        $usersRepository = $this->usersRepository([]);
+        $postsRepositoryStub = $this->createStub(PostsRepositoryInterface::class);
+        $authenticationStub = $this->createStub(JsonBodyUuidIdentification::class);
 
-        $action = new CreatePost($postsRepository, $usersRepository);
+        $authenticationStub
+            ->method('user')
+            ->willThrowException(
+                new AuthException('Cannot find user: 10373537-0805-4d7a-830e-22b481b4859c')
+            );
+
+        $action = new CreatePost($postsRepositoryStub, $authenticationStub, new DummyLogger());
 
         $response = $action->handle($request);
 
+        $response->send();
+
         $this->assertInstanceOf(ErrorResponse::class, $response);
         $this->expectOutputString('{"success":false,"reason":"Cannot find user: 10373537-0805-4d7a-830e-22b481b4859c"}');
-
-        $response->send();
     }
 
     /**
@@ -154,16 +175,19 @@ class CreatePostActionTest extends TestCase
         $request = new Request([], [], '{"author_uuid":"10373537-0805-4d7a-830e-22b481b4859c","title":"title"}');
 
         $postsRepository = $this->postsRepository([]);
-        $usersRepository = $this->usersRepository([
-            new User(
-                new UUID('10373537-0805-4d7a-830e-22b481b4859c'),
-                new Name('Ivan', 'Nikitin'),
-                'ivan',
-                new DateTimeImmutable()
-            ),
-        ]);
+        $authenticationStub = $this->createStub(JsonBodyUuidIdentification::class);
+        $authenticationStub
+            ->method('user')
+            ->willReturn(
+                new User(
+                    new UUID("10373537-0805-4d7a-830e-22b481b4859c"),
+                    new Name('first', 'last'),
+                    'username',
+                    new DateTimeImmutable()
+                )
+            );
 
-        $action = new CreatePost($postsRepository, $usersRepository);
+        $action = new CreatePost($postsRepository, $authenticationStub, new DummyLogger());
 
         $response = $action->handle($request);
 

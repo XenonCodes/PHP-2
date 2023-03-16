@@ -1,5 +1,6 @@
 <?php
 
+use Psr\Log\LoggerInterface;
 use XenonCodes\PHP2\Http\Action\Posts\DeletePost;
 use XenonCodes\PHP2\Blog\Exceptions\AppException;
 use XenonCodes\PHP2\Blog\Exceptions\HttpException;
@@ -18,16 +19,25 @@ $container = require __DIR__ . '/bootstrap.php';
 
 $request = new Request($_GET, $_SERVER, file_get_contents('php://input'));
 
+// Получаем объект логгера из контейнера
+$logger = $container->get(LoggerInterface::class);
+
 try {
     $path = $request->path();
-} catch (HttpException) {
+} catch (HttpException $e) {
+    // Логируем сообщение с уровнем WARNING
+    $logger->warning($e->getMessage());
+
     (new ErrorResponse())->send();
     return;
 }
 
 try {
     $method = $request->method();
-} catch (HttpException) {
+} catch (HttpException $e) {
+    // Логируем сообщение с уровнем WARNING
+    $logger->warning($e->getMessage());
+
     (new ErrorResponse)->send();
     return;
 }
@@ -51,13 +61,12 @@ $routes = [
     ],
 ];
 
-if (!array_key_exists($method, $routes)) {
-    (new ErrorResponse("Not found: $method $path"))->send();
-    return;
-}
-
-if (!array_key_exists($path, $routes[$method])) {
-    (new ErrorResponse("Not found: $method $path"))->send();
+if (!array_key_exists($method, $routes) || !array_key_exists($path, $routes[$method])) {
+    // Логируем сообщение с уровнем NOTICE
+    $message = "Route not found: $method $path";
+    $logger->notice($message);
+    
+    (new ErrorResponse($message))->send();
     return;
 }
 
@@ -70,6 +79,7 @@ $response = null;
 try {
     $response = $action->handle($request);
 } catch (AppException $e) {
+    $logger->error($e->getMessage(), ['exception' => $e]);
     (new ErrorResponse($e->getMessage()))->send();
 }
 

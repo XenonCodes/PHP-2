@@ -4,6 +4,7 @@ namespace XenonCodes\PHP2\Blog\Repositories\CommentsRepository;
 
 use PDO;
 use PDOStatement;
+use Psr\Log\LoggerInterface;
 use XenonCodes\PHP2\Blog\Comment;
 use XenonCodes\PHP2\Blog\Exceptions\CommentNotFoundException;
 use XenonCodes\PHP2\Blog\Repositories\PostsRepository\SqlitePostsRepository;
@@ -13,7 +14,7 @@ use XenonCodes\PHP2\Blog\UUID;
 class SqliteCommentsRepository implements CommentsRepositoryInterface
 {
     public function __construct(
-        private PDO $connection
+        private PDO $connection, private LoggerInterface $logger
     ) {
     }
 
@@ -30,6 +31,8 @@ class SqliteCommentsRepository implements CommentsRepositoryInterface
             ':author_uuid' => $comment->getAuthor()->getId(),
             ':text' => $comment->getText(),
         ]);
+
+        $this->logger->info("Comment created: {$comment->getId()}");
     }
 
     public function get(UUID $uuid): Comment
@@ -48,13 +51,14 @@ class SqliteCommentsRepository implements CommentsRepositoryInterface
     {
         $result = $statement->fetch(PDO::FETCH_ASSOC);
         if (!$result) {
+            $this->logger->warning("Комментарий $comment не найден.");
             throw new CommentNotFoundException(
                 "Комментарий $comment не найден."
             );
         }
 
-        $usersRepository = new SqliteUsersRepository($this->connection);
-        $postsRepository = new SqlitePostsRepository($this->connection);
+        $usersRepository = new SqliteUsersRepository($this->connection, $this->logger);
+        $postsRepository = new SqlitePostsRepository($this->connection, $this->logger);
 
         $user = $usersRepository->get(new UUID($result['author_uuid']));
         $post = $postsRepository->get(new UUID($result['post_uuid']));

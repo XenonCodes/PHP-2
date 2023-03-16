@@ -13,6 +13,7 @@ use XenonCodes\PHP2\Blog\Repositories\CommentsRepository\SqliteCommentsRepositor
 use XenonCodes\PHP2\Blog\User;
 use XenonCodes\PHP2\Blog\UUID;
 use XenonCodes\PHP2\Person\Name;
+use XenonCodes\PHP2\Tests\DummyLogger;
 
 class SqliteCommentsRepositoryTest extends TestCase
 {
@@ -32,7 +33,7 @@ class SqliteCommentsRepositoryTest extends TestCase
             ]);
 
         $connectionStub->method('prepare')->willReturn($statementMock);
-        $repository = new SqliteCommentsRepository($connectionStub);
+        $repository = new SqliteCommentsRepository($connectionStub, new DummyLogger());
 
         $user = new User(
             new UUID('22222222-2222-2222-2222-222222222222'),
@@ -76,7 +77,7 @@ class SqliteCommentsRepositoryTest extends TestCase
 
         $connectionStub->method('prepare')->willReturn($statementMock);
 
-        $commentRepository = new SqliteCommentsRepository($connectionStub);
+        $commentRepository = new SqliteCommentsRepository($connectionStub, new DummyLogger());
         $comment = $commentRepository->get(new UUID('33333333-3333-3333-3333-333333333333'));
 
         $this->assertSame('33333333-3333-3333-3333-333333333333', (string)$comment->getId());
@@ -90,7 +91,7 @@ class SqliteCommentsRepositoryTest extends TestCase
         $statementStub->method('fetch')->willReturn(false);
         $connectionMock->method('prepare')->willReturn($statementStub);
 
-        $repository = new SqliteCommentsRepository($connectionMock);
+        $repository = new SqliteCommentsRepository($connectionMock, new DummyLogger());
 
         $this->expectExceptionMessage('Комментарий 33333333-3333-3333-3333-333333333333 не найден.');
         $this->expectException(CommentNotFoundException::class);

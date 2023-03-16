@@ -4,6 +4,7 @@ namespace XenonCodes\PHP2\Blog\Repositories\PostsRepository;
 
 use PDO;
 use PDOStatement;
+use Psr\Log\LoggerInterface;
 use XenonCodes\PHP2\Blog\Exceptions\PostNotFoundException;
 use XenonCodes\PHP2\Blog\Post;
 use XenonCodes\PHP2\Blog\Repositories\UsersRepository\SqliteUsersRepository;
@@ -12,7 +13,7 @@ use XenonCodes\PHP2\Blog\UUID;
 class SqlitePostsRepository implements PostsRepositoryInterface
 {
     public function __construct(
-        private PDO $connection
+        private PDO $connection, private LoggerInterface $logger
     ) {
     }
 
@@ -29,6 +30,8 @@ class SqlitePostsRepository implements PostsRepositoryInterface
             ':title' => $post->getTitle(),
             ':text' => $post->getText(),
         ]);
+
+        $this->logger->info("Post created: {$post->getId()}");
     }
 
     public function get(UUID $uuid): Post
@@ -47,12 +50,13 @@ class SqlitePostsRepository implements PostsRepositoryInterface
     {
         $result = $statement->fetch(PDO::FETCH_ASSOC);
         if (!$result) {
+            $this->logger->warning("Пост $post не найден.");
             throw new PostNotFoundException(
                 "Пост $post не найден."
             );
         }
 
-        $usersRepository = new SqliteUsersRepository($this->connection);
+        $usersRepository = new SqliteUsersRepository($this->connection, $this->logger);
         $user = $usersRepository->get(new UUID($result['author_uuid']));
 
         return new Post(

@@ -2,6 +2,7 @@
 
 namespace XenonCodes\PHP2\Blog\Repositories\UsersRepository;
 
+use XenonCodes\PHP2\Blog\Exceptions\CheckingDuplicateLoginException;
 use XenonCodes\PHP2\Blog\User;
 use XenonCodes\PHP2\Blog\Exceptions\UserNotFoundException;
 use XenonCodes\PHP2\Blog\UUID;
@@ -46,5 +47,16 @@ class InMemoryUsersRepository implements UsersRepositoryInterface
             }
         }
         throw new UserNotFoundException("Пользователь $login не найден");
+    }
+
+    public function checkUser(string $login): void
+    {
+        foreach ($this->users as $user) {
+            if ($user->getLogin === $login) {
+                throw new CheckingDuplicateLoginException(
+                    'Попробуйте другой логин для регистрации.'
+                );
+            }
+        }
     }
 }

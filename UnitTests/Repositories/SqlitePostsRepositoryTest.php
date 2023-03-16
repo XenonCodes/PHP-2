@@ -12,6 +12,7 @@ use XenonCodes\PHP2\Blog\Repositories\PostsRepository\SqlitePostsRepository;
 use XenonCodes\PHP2\Blog\User;
 use XenonCodes\PHP2\Blog\UUID;
 use XenonCodes\PHP2\Person\Name;
+use XenonCodes\PHP2\Tests\DummyLogger;
 
 class SqlitePostsRepositoryTest extends TestCase
 {
@@ -31,7 +32,7 @@ class SqlitePostsRepositoryTest extends TestCase
             ]);
 
         $connectionStub->method('prepare')->willReturn($statementMock);
-        $repository = new SqlitePostsRepository($connectionStub);
+        $repository = new SqlitePostsRepository($connectionStub, new DummyLogger());
 
         $user = new User(
             new UUID('22222222-2222-2222-2222-222222222222'),
@@ -67,7 +68,7 @@ class SqlitePostsRepositoryTest extends TestCase
 
         $connectionStub->method('prepare')->willReturn($statementMock);
 
-        $postRepository = new SqlitePostsRepository($connectionStub);
+        $postRepository = new SqlitePostsRepository($connectionStub, new DummyLogger());
         $post = $postRepository->get(new UUID('11111111-1111-1111-1111-111111111111'));
 
         $this->assertSame('11111111-1111-1111-1111-111111111111', (string)$post->getId());
@@ -81,7 +82,7 @@ class SqlitePostsRepositoryTest extends TestCase
         $statementStub->method('fetch')->willReturn(false);
         $connectionMock->method('prepare')->willReturn($statementStub);
 
-        $repository = new SqlitePostsRepository($connectionMock);
+        $repository = new SqlitePostsRepository($connectionMock, new DummyLogger());
 
         $this->expectExceptionMessage('Пост 11111111-1111-1111-1111-111111111111 не найден.');
         $this->expectException(PostNotFoundException::class);

@@ -11,6 +11,7 @@ use XenonCodes\PHP2\Blog\Repositories\UsersRepository\SqliteUsersRepository;
 use XenonCodes\PHP2\Blog\User;
 use XenonCodes\PHP2\Blog\UUID;
 use XenonCodes\PHP2\Person\Name;
+use XenonCodes\PHP2\Tests\DummyLogger;
 
 class SqliteUsersRepositoryTest extends TestCase
 {
@@ -22,7 +23,7 @@ class SqliteUsersRepositoryTest extends TestCase
         $statementStub->method('fetch')->willReturn(false);
         $connectionMock->method('prepare')->willReturn($statementStub);
 
-        $repository = new SqliteUsersRepository($connectionMock);
+        $repository = new SqliteUsersRepository($connectionMock, new DummyLogger());
 
         $this->expectException(UserNotFoundException::class);
         $this->expectExceptionMessage('Ivan не найден.');
@@ -53,7 +54,7 @@ class SqliteUsersRepositoryTest extends TestCase
         // возвращает мок запроса
         $connectionStub->method('prepare')->willReturn($statementMock);
         // 1. Передаём в репозиторий стаб подключения
-        $repository = new SqliteUsersRepository($connectionStub);
+        $repository = new SqliteUsersRepository($connectionStub, new DummyLogger());
         // Вызываем метод сохранения пользователя
         $repository->save(
             new User( // Свойства пользователя точно такие,
