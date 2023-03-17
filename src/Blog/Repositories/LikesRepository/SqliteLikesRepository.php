@@ -4,6 +4,7 @@ namespace XenonCodes\PHP2\Blog\Repositories\LikesRepository;
 
 use PDO;
 use PDOStatement;
+use Psr\Log\LoggerInterface;
 use XenonCodes\PHP2\Blog\Exceptions\AlreadylikedThisException;
 use XenonCodes\PHP2\Blog\Exceptions\LikeNotFoundException;
 use XenonCodes\PHP2\Blog\Like;
@@ -14,7 +15,7 @@ use XenonCodes\PHP2\Blog\UUID;
 class SqliteLikesRepository implements LikesRepositoryInterface
 {
     public function __construct(
-        private PDO $connection
+        private PDO $connection, private LoggerInterface $logger
     ) {
     }
 
@@ -32,6 +33,7 @@ class SqliteLikesRepository implements LikesRepositoryInterface
         $result = $statement->fetch(PDO::FETCH_ASSOC);
     
         if ($result) {
+            $this->logger->warning("Пользователю уже понравился этот пост.");
             throw new AlreadylikedThisException('Пользователю уже понравился этот пост.');
         }
 
@@ -45,6 +47,8 @@ class SqliteLikesRepository implements LikesRepositoryInterface
             ':post_uuid' => $like->getPost()->getId(),
             ':author_uuid' => $like->getAuthor()->getId(),
         ]);
+
+        $this->logger->info("Like created: {$like->getId()}");
     }
 
     public function get(UUID $uuid): Like
@@ -64,13 +68,14 @@ class SqliteLikesRepository implements LikesRepositoryInterface
     {
         $result = $statement->fetch(PDO::FETCH_ASSOC);
         if (!$result) {
+            $this->logger->warning("Like $like не найден.");
             throw new LikeNotFoundException(
                 "Like $like не найден."
             );
         }
 
-        $usersRepository = new SqliteUsersRepository($this->connection);
-        $postsRepository = new SqlitePostsRepository($this->connection);
+        $usersRepository = new SqliteUsersRepository($this->connection, $this->logger);
+        $postsRepository = new SqlitePostsRepository($this->connection, $this->logger);
 
         $user = $usersRepository->get(new UUID($result['author_uuid']));
         $post = $postsRepository->get(new UUID($result['post_uuid']));
@@ -105,8 +110,8 @@ class SqliteLikesRepository implements LikesRepositoryInterface
 
         $likesData = $statement->fetchAll(PDO::FETCH_ASSOC);
 
-        $usersRepository = new SqliteUsersRepository($this->connection);
-        $postsRepository = new SqlitePostsRepository($this->connection);
+        $usersRepository = new SqliteUsersRepository($this->connection, $this->logger);
+        $postsRepository = new SqlitePostsRepository($this->connection, $this->logger);
 
         $likes = [];
 

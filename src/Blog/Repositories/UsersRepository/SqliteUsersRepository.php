@@ -5,6 +5,7 @@ namespace XenonCodes\PHP2\Blog\Repositories\UsersRepository;
 use DateTimeImmutable;
 use PDO;
 use PDOStatement;
+use Psr\Log\LoggerInterface;
 use XenonCodes\PHP2\Blog\Exceptions\CheckingDuplicateLoginException;
 use XenonCodes\PHP2\Blog\Exceptions\UserNotFoundException;
 use XenonCodes\PHP2\Blog\User;
@@ -14,25 +15,27 @@ use XenonCodes\PHP2\Person\Name;
 class SqliteUsersRepository implements UsersRepositoryInterface
 {
     public function __construct(
-        private PDO $connection
+        private PDO $connection, private LoggerInterface $logger
     ) {
     }
 
     public function save(User $user): void
     {
-        $statement = $this->connection->prepare(
-            'SELECT * FROM users WHERE login = :login'
-        );
+        //--------------------Не работает-----------------------------
+        // $statement = $this->connection->prepare(
+        //     'SELECT * FROM users WHERE login = :login'
+        // );
     
-        $statement->execute([
-            ':login' => $user->getLogin(),
-        ]);
+        // $statement->execute([
+        //     ':login' => $user->getLogin(),
+        // ]);
     
-        $result = $statement->fetch(PDO::FETCH_ASSOC);
+        // $result = $statement->fetch(PDO::FETCH_ASSOC);
     
-        if ($result) {
-            throw new CheckingDuplicateLoginException('Попробуйте другой логин для регистрации.');
-        }
+        // if ($result) {
+        //     throw new CheckingDuplicateLoginException('Попробуйте другой логин для регистрации.');
+        // }
+        //----------------------------------------------------------
 
         $statement = $this->connection->prepare(
             'INSERT INTO users (uuid, login, first_name, last_name, date_register)
@@ -47,6 +50,8 @@ class SqliteUsersRepository implements UsersRepositoryInterface
             ':last_name' => $user->getName()->getLastName(),
             ':date_register' => $user->getRegistredOn(),
         ]);
+
+        $this->logger->info("User created: {$user->getId()}");
     }
 
     public function get(UUID $uuid): User
@@ -86,6 +91,7 @@ class SqliteUsersRepository implements UsersRepositoryInterface
     {
         $result = $statement->fetch(PDO::FETCH_ASSOC);
         if ($result === false) {
+            $this->logger->warning("$user не найден.");
             throw new UserNotFoundException(
                 "$user не найден."
             );
@@ -97,5 +103,28 @@ class SqliteUsersRepository implements UsersRepositoryInterface
             $result['login'],
             new DateTimeImmutable($result['date_register']),
         );
+    }
+
+    public function checkUser(string $login): void
+    {
+        $statement = $this->connection->prepare(
+            'SELECT *
+            FROM users
+            WHERE login = :login;'
+        );
+
+        $statement->execute(
+            [
+                ':login' => $login
+            ]
+        );
+
+        $isExisted = $statement->fetch();
+
+        if ($isExisted) {
+            throw new CheckingDuplicateLoginException(
+                'Попробуйте другой логин для регистрации.'
+            );
+        }
     }
 }

@@ -3,6 +3,7 @@
 namespace XenonCodes\PHP2\Http\Action\Users;
 
 use DateTimeImmutable;
+use XenonCodes\PHP2\Blog\Exceptions\CheckingDuplicateLoginException;
 use XenonCodes\PHP2\Blog\Exceptions\HttpException;
 use XenonCodes\PHP2\Blog\Repositories\UsersRepository\UsersRepositoryInterface;
 use XenonCodes\PHP2\Blog\User;
@@ -38,7 +39,12 @@ class CreateUser implements ActionInterface
 
         } catch (HttpException $e) {
             return new ErrorResponse($e->getMessage());
+        }
 
+        try {
+            $this->usersRepository->checkUser($request->jsonBodyField('login'));
+        } catch (CheckingDuplicateLoginException $e) {
+            return new ErrorResponse($e->getMessage());
         }
 
         $this->usersRepository->save($user);

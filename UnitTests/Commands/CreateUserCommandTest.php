@@ -13,6 +13,7 @@ use XenonCodes\PHP2\Blog\Repositories\UsersRepository\UsersRepositoryInterface;
 use XenonCodes\PHP2\Blog\User;
 use XenonCodes\PHP2\Blog\UUID;
 use XenonCodes\PHP2\Person\Name;
+use XenonCodes\PHP2\Tests\DummyLogger;
 
 class CreateUserCommandTest extends TestCase
 {
@@ -23,7 +24,7 @@ class CreateUserCommandTest extends TestCase
         // Создаём объект команды
         // У команды одна зависимость - UsersRepositoryInterface
         $command = new CreateUserCommand(
-            $usersRepository = new class implements UsersRepositoryInterface  // здесь должна быть реализация UsersRepositoryInterface
+            $usersRepository = new class implements UsersRepositoryInterface  // здесь должна быть реализация UsersRepositoryInterfacew
             {
                 public function save(User $user): void
                 {
@@ -41,7 +42,13 @@ class CreateUserCommandTest extends TestCase
                     // поэтому возвращаем совершенно произвольного
                     return new User(UUID::random(), new Name("first", "last"), "user123", new DateTimeImmutable());
                 }
-            }
+                public function checkUser(string $login): void
+                {
+                    // Ничего не делаем
+                }
+            },
+            // Тестовая реализация логгера
+            new DummyLogger()
         );
         // Описываем тип ожидаемого исключения
         $this->expectException(CommandException::class);
@@ -56,7 +63,11 @@ class CreateUserCommandTest extends TestCase
     {
         // Передаём объект анонимного класса
         // в качестве реализации UsersRepositoryInterface
-        $command = new CreateUserCommand($this->makeUsersRepository());
+        $command = new CreateUserCommand(
+            $this->makeUsersRepository(),
+            // Тестовая реализация логгера
+            new DummyLogger()
+        );
         // Ожидаем, что будет брошено исключение
         $this->expectException(ArgumentsException::class);
         $this->expectExceptionMessage('No such argument: first_name');
@@ -68,7 +79,11 @@ class CreateUserCommandTest extends TestCase
     public function testItRequiresLastName(): void
     {
         // Передаём в конструктор команды объект, возвращаемый нашей функцией
-        $command = new CreateUserCommand($this->makeUsersRepository());
+        $command = new CreateUserCommand(
+            $this->makeUsersRepository(),
+            // Тестовая реализация логгера
+            new DummyLogger()
+        );
         $this->expectException(ArgumentsException::class);
         $this->expectExceptionMessage('No such argument: last_name');
         $command->handle(new Arguments([
@@ -101,6 +116,10 @@ class CreateUserCommandTest extends TestCase
             {
                 throw new UserNotFoundException("Not found");
             }
+            public function checkUser(string $login): void
+            {
+                // Ничего не делаем
+            }
             // Этого метода нет в контракте UsersRepositoryInterface,
             // но ничто не мешает его добавить.
             // С помощью этого метода мы можем узнать,
@@ -111,7 +130,7 @@ class CreateUserCommandTest extends TestCase
             }
         };
         // Передаём наш мок в команду
-        $command = new CreateUserCommand($usersRepository);
+        $command = new CreateUserCommand($usersRepository, new DummyLogger());
         // Запускаем команду
         $command->handle(new Arguments([
             'login' => 'Ivan',
@@ -140,6 +159,10 @@ class CreateUserCommandTest extends TestCase
             {
                 // И здесь ничего не делаем
                 throw new UserNotFoundException("Not found");
+            }
+            public function checkUser(string $login): void
+            {
+                // Ничего не делаем
             }
         };
     }
