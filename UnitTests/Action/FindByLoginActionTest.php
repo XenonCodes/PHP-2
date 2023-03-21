@@ -76,6 +76,7 @@ class FindByLoginActionTest extends TestCase
                 UUID::random(),
                 new Name('Ivan', 'Nikitin'),
                 'ivan',
+                'password',
                 new DateTimeImmutable()
             ),
         ]);

@@ -21,31 +21,16 @@ class SqliteUsersRepository implements UsersRepositoryInterface
 
     public function save(User $user): void
     {
-        //--------------------Не работает-----------------------------
-        // $statement = $this->connection->prepare(
-        //     'SELECT * FROM users WHERE login = :login'
-        // );
-    
-        // $statement->execute([
-        //     ':login' => $user->getLogin(),
-        // ]);
-    
-        // $result = $statement->fetch(PDO::FETCH_ASSOC);
-    
-        // if ($result) {
-        //     throw new CheckingDuplicateLoginException('Попробуйте другой логин для регистрации.');
-        // }
-        //----------------------------------------------------------
-
         $statement = $this->connection->prepare(
-            'INSERT INTO users (uuid, login, first_name, last_name, date_register)
-            VALUES (:uuid, :login, :first_name, :last_name, :date_register)'
+            'INSERT INTO users (uuid, login, password, first_name, last_name, date_register)
+            VALUES (:uuid, :login, :password, :first_name, :last_name, :date_register)'
         );
 
         // Выполняем запрос с конкретными значениями
         $statement->execute([
             ':uuid' => $user->getId(),
             ':login' => $user->getLogin(),
+            ':password' => $user->getHashedPassword(),
             ':first_name' => $user->getName()->getFirstName(),
             ':last_name' => $user->getName()->getLastName(),
             ':date_register' => $user->getRegistredOn(),
@@ -101,6 +86,7 @@ class SqliteUsersRepository implements UsersRepositoryInterface
             new UUID($result['uuid']),
             new Name($result['first_name'], $result['last_name']),
             $result['login'],
+            $result['password'],
             new DateTimeImmutable($result['date_register']),
         );
     }

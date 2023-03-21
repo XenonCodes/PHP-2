@@ -38,6 +38,7 @@ class SqlitePostsRepositoryTest extends TestCase
             new UUID('22222222-2222-2222-2222-222222222222'),
             new Name('OneName', 'TwoName'),
             'login',
+            'password123',
             new DateTimeImmutable(),
         );
 
@@ -61,7 +62,8 @@ class SqlitePostsRepositoryTest extends TestCase
             'author_uuid' => '22222222-2222-2222-2222-222222222222',
             'title' => 'Заголовок',
             'text' => 'Текст...',
-            'login' => 'logib',
+            'login' => 'login',
+            'password' => 'password123',
             'first_name' => 'OneName',
             'last_name' => 'TwoName',
         ]);

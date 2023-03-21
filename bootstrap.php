@@ -13,9 +13,16 @@ use XenonCodes\PHP2\Blog\Repositories\PostsRepository\SqlitePostsRepository;
 use XenonCodes\PHP2\Blog\Repositories\UsersRepository\SqliteUsersRepository;
 use XenonCodes\PHP2\Blog\Repositories\UsersRepository\UsersRepositoryInterface;
 use Dotenv\Dotenv;
+use XenonCodes\PHP2\Blog\Repositories\AuthTokensRepository\AuthTokensRepositoryInterface;
+use XenonCodes\PHP2\Blog\Repositories\AuthTokensRepository\SqliteAuthTokensRepository;
+use XenonCodes\PHP2\Http\Auth\BearerTokenAuthentication;
+use XenonCodes\PHP2\Http\Auth\AuthenticationInterface;
 use XenonCodes\PHP2\Http\Auth\JsonBodyLoginIdentification;
 use XenonCodes\PHP2\Http\Auth\IdentificationInterface;
 use XenonCodes\PHP2\Http\Auth\JsonBodyUuidIdentification;
+use XenonCodes\PHP2\Http\Auth\PasswordAuthentication;
+use XenonCodes\PHP2\Http\Auth\PasswordAuthenticationInterface;
+use XenonCodes\PHP2\Http\Auth\TokenAuthenticationInterface;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
@@ -30,10 +37,29 @@ $container->bind(
 );
 
 $container->bind(
+    PasswordAuthenticationInterface::class,
+    PasswordAuthentication::class
+);
+
+$container->bind(
+    TokenAuthenticationInterface::class,
+    BearerTokenAuthentication::class
+);
+
+$container->bind(
+    AuthTokensRepositoryInterface::class,
+    SqliteAuthTokensRepository::class
+);
+
+$container->bind(
+    AuthenticationInterface::class,
+    PasswordAuthentication::class
+);
+
+$container->bind(
     IdentificationInterface::class,
     JsonBodyLoginIdentification::class
 );
-
 
 $container->bind(
     PostsRepositoryInterface::class,
