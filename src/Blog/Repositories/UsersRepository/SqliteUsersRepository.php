@@ -15,7 +15,8 @@ use XenonCodes\PHP2\Person\Name;
 class SqliteUsersRepository implements UsersRepositoryInterface
 {
     public function __construct(
-        private PDO $connection, private LoggerInterface $logger
+        private PDO $connection,
+        private LoggerInterface $logger
     ) {
     }
 
@@ -23,7 +24,10 @@ class SqliteUsersRepository implements UsersRepositoryInterface
     {
         $statement = $this->connection->prepare(
             'INSERT INTO users (uuid, login, password, first_name, last_name, date_register)
-            VALUES (:uuid, :login, :password, :first_name, :last_name, :date_register)'
+            VALUES (:uuid, :login, :password, :first_name, :last_name, :date_register)
+            ON CONFLICT (uuid) DO UPDATE SET
+first_name = :first_name,
+last_name = :last_name;'
         );
 
         // Выполняем запрос с конкретными значениями
