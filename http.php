@@ -4,6 +4,8 @@ use Psr\Log\LoggerInterface;
 use XenonCodes\PHP2\Http\Action\Posts\DeletePost;
 use XenonCodes\PHP2\Blog\Exceptions\AppException;
 use XenonCodes\PHP2\Blog\Exceptions\HttpException;
+use XenonCodes\PHP2\Http\Action\Auth\LogIn;
+use XenonCodes\PHP2\Http\Action\Auth\LogOut;
 use XenonCodes\PHP2\Http\Action\Comments\CreateComment;
 use XenonCodes\PHP2\Http\Action\Comments\DeleteComment;
 use XenonCodes\PHP2\Http\Action\Likes\CreateLike;
@@ -49,6 +51,8 @@ $routes = [
         // '/posts/show' => FindByPost::class,
     ],
     'POST' => [
+        '/login' => LogIn::class,
+        '/logout' => LogOut::class,
         '/posts/create' => CreatePost::class,
         '/posts/likes/create' => CreateLike::class,
         '/posts/comments/create' => CreateComment::class,

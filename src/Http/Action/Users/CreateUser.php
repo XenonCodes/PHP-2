@@ -25,16 +25,13 @@ class CreateUser implements ActionInterface
     public function handle(Request $request): Response
     {
         try {
-            $newUserUuid = UUID::random();
-
-            $user = new User(
-                $newUserUuid,
+            $user = User::createFrom(
+                $request->jsonBodyField('login'),
+                $request->jsonBodyField('password'),
                 new Name(
                     $request->jsonBodyField('first_name'),
                     $request->jsonBodyField('last_name')
-                ),
-                $request->jsonBodyField('login'),
-                new DateTimeImmutable()
+                )
             );
 
         } catch (HttpException $e) {
@@ -50,7 +47,7 @@ class CreateUser implements ActionInterface
         $this->usersRepository->save($user);
 
         return new SuccessfulResponse([
-            'uuid' => (string)$newUserUuid,
+            'uuid' => (string)$user->getId(),
         ]);
     }
 }

@@ -72,8 +72,15 @@ class SqlitePostsRepository implements PostsRepositoryInterface
         $statement = $this->connection->prepare(
             "DELETE FROM posts
             WHERE uuid = :uuid;
-            
-            DELETE FROM comments
+            "
+        );
+
+        $statement->execute([
+            ':uuid' => (string)$uuid,
+        ]);
+
+        $statement = $this->connection->prepare(
+            "DELETE FROM comments
             WHERE post_uuid = :uuid;
             "
         );

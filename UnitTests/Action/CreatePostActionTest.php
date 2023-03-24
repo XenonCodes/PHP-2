@@ -16,6 +16,7 @@ use XenonCodes\PHP2\Http\Action\Posts\CreatePost;
 use XenonCodes\PHP2\Http\Auth\IdentificationInterface;
 use XenonCodes\PHP2\Http\Auth\JsonBodyLoginIdentification;
 use XenonCodes\PHP2\Http\Auth\JsonBodyUuidIdentification;
+use XenonCodes\PHP2\Http\Auth\TokenAuthenticationInterface;
 use XenonCodes\PHP2\Http\ErrorResponse;
 use XenonCodes\PHP2\Http\Request;
 use XenonCodes\PHP2\Http\SuccessfulResponse;
@@ -67,7 +68,7 @@ class CreatePostActionTest extends TestCase
     public function testItReturnsSuccessAnswer(): void
     {
         $postsRepositoryStub = $this->createStub(PostsRepositoryInterface::class);
-        $authenticationStub = $this->createStub(JsonBodyLoginIdentification::class);
+        $authenticationStub = $this->createStub(TokenAuthenticationInterface::class);
 
         $authenticationStub
             ->method('user')
@@ -76,6 +77,7 @@ class CreatePostActionTest extends TestCase
                     new UUID("10373537-0805-4d7a-830e-22b481b4859c"),
                     new Name('first', 'last'),
                     'username',
+                    'password',
                     new DateTimeImmutable()
                 )
             );
@@ -106,7 +108,7 @@ class CreatePostActionTest extends TestCase
 
         $postsRepository = $this->postsRepository();
 
-        $authenticationStub = $this->createStub(JsonBodyUuidIdentification::class);
+        $authenticationStub = $this->createStub(TokenAuthenticationInterface::class);
 
         $authenticationStub
             ->method('user')
@@ -115,6 +117,7 @@ class CreatePostActionTest extends TestCase
                     new UUID("10373537-0805-4d7a-830e-22b481b4859c"),
                     new Name('first', 'last'),
                     'username',
+                    'password',
                     new DateTimeImmutable()
                 )
             );
@@ -147,7 +150,7 @@ class CreatePostActionTest extends TestCase
         $request = new Request([], [], '{"author_uuid":"10373537-0805-4d7a-830e-22b481b4859c","title":"title","text":"text"}');
 
         $postsRepositoryStub = $this->createStub(PostsRepositoryInterface::class);
-        $authenticationStub = $this->createStub(JsonBodyUuidIdentification::class);
+        $authenticationStub = $this->createStub(TokenAuthenticationInterface::class);
 
         $authenticationStub
             ->method('user')
@@ -175,7 +178,7 @@ class CreatePostActionTest extends TestCase
         $request = new Request([], [], '{"author_uuid":"10373537-0805-4d7a-830e-22b481b4859c","title":"title"}');
 
         $postsRepository = $this->postsRepository([]);
-        $authenticationStub = $this->createStub(JsonBodyUuidIdentification::class);
+        $authenticationStub = $this->createStub(TokenAuthenticationInterface::class);
         $authenticationStub
             ->method('user')
             ->willReturn(
@@ -183,6 +186,7 @@ class CreatePostActionTest extends TestCase
                     new UUID("10373537-0805-4d7a-830e-22b481b4859c"),
                     new Name('first', 'last'),
                     'username',
+                    'password',
                     new DateTimeImmutable()
                 )
             );

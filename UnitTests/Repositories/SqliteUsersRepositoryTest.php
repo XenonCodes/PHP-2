@@ -46,6 +46,7 @@ class SqliteUsersRepositoryTest extends TestCase
             ->with([ // с единственным аргументом - массивом
                 ':uuid' => '123e4567-e89b-12d3-a456-426614174000',
                 ':login' => 'ivan123',
+                ':password' => 'password123',
                 ':first_name' => 'Ivan',
                 ':last_name' => 'Nikitin',
                 ':date_register' => '2023-03-05',
@@ -62,6 +63,7 @@ class SqliteUsersRepositoryTest extends TestCase
                 new UUID('123e4567-e89b-12d3-a456-426614174000'),
                 new Name('Ivan', 'Nikitin'),
                 'ivan123',
+                'password123',
                 new DateTimeImmutable('2023-03-05')
             )
         );

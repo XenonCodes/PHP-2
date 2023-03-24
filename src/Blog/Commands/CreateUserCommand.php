@@ -21,13 +21,13 @@ class CreateUserCommand
     ) {
     }
 
-    public function handle(Arguments $argument): void
+    public function handle(Arguments $arguments): void
     {
         // Логируем информацию о том, что команда запущена
         // Уровень логирования – INFO
         $this->logger->info("Create user command started");
 
-        $login = $argument->get('login');
+        $login = $arguments->get('login');
 
         // Проверяем, существует ли пользователь в репозитории
         if ($this->userExists($login)) {
@@ -38,21 +38,23 @@ class CreateUserCommand
             throw new CommandException("User already exists: $login");
         }
 
-        $uuid = UUID::random();
+        // Создаём объект пользователя
+        // Функция createFrom сама создаст UUID
+        // и захеширует пароль
+        $user = User::createFrom(
+            $login,
+            $arguments->get('password'),
+            new Name(
+                $arguments->get('first_name'),
+                $arguments->get('last_name')
+            )
+        );
 
         // Сохраняем пользователя в репозиторий
-        $this->usersRepository->save(new User(
-            $uuid,
-            new Name(
-                $argument->get('first_name'),
-                $argument->get('last_name')
-            ),
-            $login,
-            new DateTimeImmutable()
-        ));
+        $this->usersRepository->save($user);
 
         // Логируем информацию о новом пользователе
-        $this->logger->info("User created: $uuid");
+        $this->logger->info("User created: " . $user->getId());
     }
 
     private function userExists(string $login): bool

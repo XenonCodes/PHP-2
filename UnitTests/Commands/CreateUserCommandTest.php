@@ -40,7 +40,7 @@ class CreateUserCommandTest extends TestCase
                     // Нас интересует реализация только этого метода
                     // Для нашего теста не важно, что это будет за пользователь,
                     // поэтому возвращаем совершенно произвольного
-                    return new User(UUID::random(), new Name("first", "last"), "user123", new DateTimeImmutable());
+                    return new User(UUID::random(), new Name("first", "last"), "user123", "123", new DateTimeImmutable());
                 }
                 public function checkUser(string $login): void
                 {
@@ -55,7 +55,25 @@ class CreateUserCommandTest extends TestCase
         // и его сообщение
         $this->expectExceptionMessage('User already exists: Ivan');
         // Запускаем команду с аргументами
-        $command->handle(new Arguments(['login' => 'Ivan']));
+        $command->handle(new Arguments([
+            'login' => 'Ivan',
+            'password' => '123'
+        ]));
+    }
+
+    public function testItRequiresPassword(): void
+    {
+        $command = new CreateUserCommand(
+            $this->makeUsersRepository(),
+            new DummyLogger()
+            );
+
+            $this->expectException(ArgumentsException::class);
+            $this->expectExceptionMessage('No such argument: password');
+
+            $command->handle(new Arguments([
+                'login' => 'Ivan'
+            ]));            
     }
 
     // Тест проверяет, что команда действительно требует имя пользователя
@@ -72,7 +90,10 @@ class CreateUserCommandTest extends TestCase
         $this->expectException(ArgumentsException::class);
         $this->expectExceptionMessage('No such argument: first_name');
         // Запускаем команду
-        $command->handle(new Arguments(['login' => 'Ivan']));
+        $command->handle(new Arguments([
+            'login' => 'Ivan',
+            'password' => '123'
+        ]));
     }
 
     // Тест проверяет, что команда действительно требует фамилию пользователя
@@ -91,6 +112,7 @@ class CreateUserCommandTest extends TestCase
             // Нам нужно передать имя пользователя,
             // чтобы дойти до проверки наличия фамилии
             'first_name' => 'Ivan',
+            'password' => '123'
         ]));
     }
 
@@ -134,6 +156,7 @@ class CreateUserCommandTest extends TestCase
         // Запускаем команду
         $command->handle(new Arguments([
             'login' => 'Ivan',
+            'password' => '123',
             'first_name' => 'Ivan',
             'last_name' => 'Nikitin',
         ]));
