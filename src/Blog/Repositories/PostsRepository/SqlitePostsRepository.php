@@ -3,9 +3,11 @@
 namespace XenonCodes\PHP2\Blog\Repositories\PostsRepository;
 
 use PDO;
+use PDOException;
 use PDOStatement;
 use Psr\Log\LoggerInterface;
 use XenonCodes\PHP2\Blog\Exceptions\PostNotFoundException;
+use XenonCodes\PHP2\Blog\Exceptions\PostsRepositoryException;
 use XenonCodes\PHP2\Blog\Post;
 use XenonCodes\PHP2\Blog\Repositories\UsersRepository\SqliteUsersRepository;
 use XenonCodes\PHP2\Blog\UUID;
@@ -13,7 +15,8 @@ use XenonCodes\PHP2\Blog\UUID;
 class SqlitePostsRepository implements PostsRepositoryInterface
 {
     public function __construct(
-        private PDO $connection, private LoggerInterface $logger
+        private PDO $connection,
+        private LoggerInterface $logger
     ) {
     }
 
@@ -69,24 +72,32 @@ class SqlitePostsRepository implements PostsRepositoryInterface
 
     public function delete(UUID $uuid): void
     {
-        $statement = $this->connection->prepare(
-            "DELETE FROM posts
-            WHERE uuid = :uuid;
-            "
-        );
+        try {
+            $statement = $this->connection->prepare(
+                "DELETE FROM posts
+                WHERE uuid = :uuid;
+                "
+            );
 
-        $statement->execute([
-            ':uuid' => (string)$uuid,
-        ]);
+            $statement->execute([
+                ':uuid' => (string)$uuid,
+            ]);
 
-        $statement = $this->connection->prepare(
-            "DELETE FROM comments
-            WHERE post_uuid = :uuid;
-            "
-        );
+            $statement = $this->connection->prepare(
+                "DELETE FROM comments
+                WHERE post_uuid = :uuid;
+                "
+            );
 
-        $statement->execute([
-            ':uuid' => (string)$uuid,
-        ]);
+            $statement->execute([
+                ':uuid' => (string)$uuid,
+            ]);
+        } catch (PDOException $e) {
+            throw new PostsRepositoryException(
+                $e->getMessage(),
+                (int)$e->getCode(),
+                $e
+            );
+        }
     }
 }

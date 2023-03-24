@@ -23,6 +23,11 @@ use XenonCodes\PHP2\Http\Auth\JsonBodyUuidIdentification;
 use XenonCodes\PHP2\Http\Auth\PasswordAuthentication;
 use XenonCodes\PHP2\Http\Auth\PasswordAuthenticationInterface;
 use XenonCodes\PHP2\Http\Auth\TokenAuthenticationInterface;
+use Faker\Generator;
+use Faker\Provider\Lorem;
+use Faker\Provider\ru_RU\Internet;
+use Faker\Provider\ru_RU\Person;
+use Faker\Provider\ru_RU\Text;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
@@ -34,6 +39,22 @@ $container = new DIContainer();
 $container->bind(
     PDO::class,
     new PDO('sqlite:' . __DIR__ . '/' . $_SERVER['SQLITE_DB_PATH'])
+);
+
+// Создаём объект генератора тестовых данных
+$faker = new Generator();
+
+// Инициализируем необходимые нам виды данных
+$faker->addProvider(new Person($faker));
+$faker->addProvider(new Text($faker));
+$faker->addProvider(new Internet($faker));
+$faker->addProvider(new Lorem($faker));
+
+// Добавляем генератор тестовых данных
+// в контейнер внедрения зависимостей
+$container->bind(
+    Generator::class,
+    $faker
 );
 
 $container->bind(
